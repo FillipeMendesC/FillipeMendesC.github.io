@@ -13,7 +13,7 @@
     <div class="container">
 
 
-        <div class="left">
+        <div class="card left">
             <h2>Em qual unidade está o numero inserido?</h2>
 
             <select  class="select"  id="select_opcao_input" onchange="mudaTipo()">
@@ -33,16 +33,18 @@
         </div>
 
 
-        <div class="left">
+        <div class="card right">
             <h2>Qual para qual unidade deseja converter?</h2>
             <select class="select" id="select_opcao_output">
-                <option class="option" value="2"  id="select_final_2">Binário</option>
-                <option class="option" value="10" id="select_final_10" style="display:none;">Decimal</option>
-                <option class="option" value="8"  id="select_final_8">Octal</option>
-                <option class="option" value="16" id="select_final_16">Hexadecimal</option>
+                <option value="2"  id="select_final_2">Binário</option>
+                <option value="10" id="select_final_10" style="display:none;">Decimal</option>
+                <option value="8"  id="select_final_8">Octal</option>
+                <option value="16" id="select_final_16">Hexadecimal</option>
+                <option value="0" id="select_final_all">Todas</option>
             </select>
-
+            <div id="div_out"></div>
             <input class="input" type="text" id="output" placeholder="Resultado:" readonly>
+            <div class="all" id="div_all"></div>
         </div>
     </div>
 </body>
@@ -53,15 +55,17 @@
     var ultimaBaseInicial = 10;
      function mudaTipo(){
         const baseInicial = Number(select_opcao_input.value);
+        const baseFinal = Number(select_opcao_output.value)
         if(baseInicial == 16){
             input_numero.type = 'text'
-            select_final_16.style = 'display: none;'
         }else {
             input_numero.type = 'number'
         }
 
         if(baseInicial != ultimaBaseInicial){
-            select_opcao_output.value = ultimaBaseInicial
+            if(baseFinal != 0){
+                select_opcao_output.value = ultimaBaseInicial
+            }
             document.getElementById(`select_final_${baseInicial}`).style = 'display: none;'
             document.getElementById(`select_final_${ultimaBaseInicial}`).style = 'display: default;'
             ultimaBaseInicial = baseInicial;
@@ -71,21 +75,41 @@
     function conversor(){
         const baseInicial = Number(select_opcao_input.value);
         var entrada
+
         if(input_numero.type == 'text'){
             entrada = input_numero.value
         }else{
             entrada = Number(input_numero.value);
         }
+
         const baseFinal = Number(select_opcao_output.value);
 
-        resultado = converter(entrada, baseInicial, baseFinal)
+        var resultado
+        div_all.innerHTML = ''
+        div_out.innerHTML = ''
 
-        console.log(resultado);
-        if(resultado == 'NaN'){
-            resultado = 'insira um valor valido!'
+        if(baseFinal == 0){
+            var bases = [2,8,10,16]
+            bases = bases.filter((x) => x != baseInicial)
+            div_out.innerHTML = `Base ${bases[0]}`
+            div_all.innerHTML += `<div id="div_out2">Base ${bases[1]}</div> <input class="input" type="text" id="output2" placeholder="Resultado:" readonly>`
+            div_all.innerHTML += `<div id="div_out3">Base ${bases[2]}</div> <input class="input" type="text" id="output3" placeholder="Resultado:" readonly>`
+
+
+            resultado = converter(entrada, baseInicial, bases[0])
+            output2.value = converter(entrada, baseInicial, bases[1])
+            output3.value = converter(entrada, baseInicial, bases[2])
+
+        } else {
+            resultado = converter(entrada, baseInicial, baseFinal)
         }
+        if(resultado == 'NaN'){
+                resultado = 'insira um valor valido!'
+                output2.value = 'insira um valor valido!'
+                output3.value = 'insira um valor valido!'
+        }
+            
         output.value = resultado;
-
     }
 
 
