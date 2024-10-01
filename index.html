@@ -14,13 +14,14 @@
 
 
         <div class="card left">
-            <h2>Em qual unidade está o numero inserido?</h2>
+            <h2>Em qual unidade está o valor inserido?</h2>
 
             <select  class="select"  id="select_opcao_input" onchange="mudaTipo()">
-                <option class="option" value="10">Decimal</option>
-                <option class="option" value="2">Binário</option>
-                <option class="option" value="8">Octal</option>
-                <option class="option" value="16">Hexadecimal</option>
+                <option value="10" id="select_inicial_10">Decimal</option>
+                <option value="2"  id="select_inicial_2">Binário</option>
+                <option value="8"  id="select_inicial_8">Octal</option>
+                <option value="16" id="select_inicial_16">Hexadecimal</option>
+                <option value="char" id="select_char" style="display: none;">Char</option>
             </select>
             <input class="input" type="number" id="input_numero" placeholder="Insira o valor que deseja converter:">
 
@@ -35,12 +36,13 @@
 
         <div class="card right">
             <h2>Qual para qual unidade deseja converter?</h2>
-            <select class="select" id="select_opcao_output">
+            <select class="select" id="select_opcao_output" onchange="validadorASCII()">
                 <option value="2"  id="select_final_2">Binário</option>
                 <option value="10" id="select_final_10" style="display:none;">Decimal</option>
                 <option value="8"  id="select_final_8">Octal</option>
                 <option value="16" id="select_final_16">Hexadecimal</option>
                 <option value="0" id="select_final_all">Todas</option>
+                <option value="1">ASCII</option>
             </select>
             <div id="div_out"></div>
             <input class="input" type="text" id="output" placeholder="Resultado:" readonly>
@@ -53,6 +55,33 @@
 
 <script>
     var ultimaBaseInicial = 10;
+    function validadorASCII() {
+        const baseInicial = Number(select_opcao_input.value)
+        const baseFinal = Number(select_opcao_output.value)
+        if (baseFinal == 1){
+            input_numero.value = ''
+            input_numero.maxlength = '1'
+            input_numero.type = 'text'
+
+            select_char.style = "display: initial;"
+            select_inicial_2.style = "display: none;"
+            select_inicial_10.style = "display: none;"
+            select_inicial_8.style = "display: none;"
+            select_inicial_16.style = "display: none;"
+            select_opcao_input.value = 'char'
+        } else {
+            input_numero.maxlength = ''
+            input_numero.type = 'number'
+            select_opcao_input.value = ultimaBaseInicial
+
+            select_char.style = "display: none;"
+            select_inicial_2.style = "display: default;"
+            select_inicial_10.style = "display: default;"
+            select_inicial_8.style = "display: default;"
+            select_inicial_16.style = "display: default;"
+        }
+    }
+
      function mudaTipo(){
         const baseInicial = Number(select_opcao_input.value);
         const baseFinal = Number(select_opcao_output.value)
@@ -63,7 +92,7 @@
         }
 
         if(baseInicial != ultimaBaseInicial){
-            if(baseFinal != 0){
+            if(baseFinal > 1){
                 select_opcao_output.value = ultimaBaseInicial
             }
             document.getElementById(`select_final_${baseInicial}`).style = 'display: none;'
@@ -74,31 +103,41 @@
 
     function conversor(){
         const baseInicial = Number(select_opcao_input.value);
+        const baseFinal = Number(select_opcao_output.value);
         var entrada
 
-        if(input_numero.type == 'text'){
+        if(input_numero.type == 'text' && baseInicial == 16){
             entrada = input_numero.value
-        }else{
+        }else if(baseFinal == 1) {
+            var char = input_numero.value
+            entrada = char.charCodeAt()
+        } else {
             entrada = Number(input_numero.value);
         }
 
-        const baseFinal = Number(select_opcao_output.value);
 
         var resultado
         div_all.innerHTML = ''
         div_out.innerHTML = ''
 
-        if(baseFinal == 0){
-            var bases = [2,8,10,16]
-            bases = bases.filter((x) => x != baseInicial)
+        if(baseFinal <= 1){
+            var valorBase = baseFinal
+            if(baseFinal == 0) {
+                var bases = [2,8,10,16]
+                bases = bases.filter((x) => x != baseInicial)
+            } else {
+                var bases = [2,10,16]
+                valorBase = 10
+            }
+
             div_out.innerHTML = `Base ${bases[0]}`
             div_all.innerHTML += `<div id="div_out2">Base ${bases[1]}</div> <input class="input" type="text" id="output2" placeholder="Resultado:" readonly>`
             div_all.innerHTML += `<div id="div_out3">Base ${bases[2]}</div> <input class="input" type="text" id="output3" placeholder="Resultado:" readonly>`
 
+            resultado = converter(entrada, valorBase, bases[0])
+            output2.value = converter(entrada, valorBase, bases[1])
+            output3.value = converter(entrada, valorBase, bases[2])
 
-            resultado = converter(entrada, baseInicial, bases[0])
-            output2.value = converter(entrada, baseInicial, bases[1])
-            output3.value = converter(entrada, baseInicial, bases[2])
 
         } else {
             resultado = converter(entrada, baseInicial, baseFinal)
